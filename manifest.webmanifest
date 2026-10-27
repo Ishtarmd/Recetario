@@ -1,0 +1,39 @@
+{
+  "id": "./?app=ayamonte21k-v2",
+  "name": "Rumbo a Ayamonte",
+  "short_name": "Ayamonte 21K",
+  "description": "Plan de entrenamiento para la Media Maratón de Ayamonte 2027",
+  "lang": "es",
+  "start_url": "./?app=ayamonte21k-v2",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
