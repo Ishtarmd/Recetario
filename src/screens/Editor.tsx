@@ -118,7 +118,8 @@ export function Editor({
     );
   }
 
-  const confirmQty = (qty: number, unit: UnitId) => {
+  const confirmQty = (qty: number, unit: UnitId, note: string) => {
+    const cleanNote = note.trim() || undefined;
     if (pending?.mode === 'add') {
       const ing = pending.ing;
       const item: RecipeItem = {
@@ -131,10 +132,11 @@ export function Editor({
         units: ing.units,
         piece: ing.piece,
         fine: ing.fine,
+        note: cleanNote,
       };
       update({ items: [...form.items, item] });
     } else if (pending?.mode === 'edit') {
-      update({ items: form.items.map((i) => (i.key === pending.key ? { ...i, qty, unit } : i)) });
+      update({ items: form.items.map((i) => (i.key === pending.key ? { ...i, qty, unit, note: cleanNote } : i)) });
     }
     setPending(null);
   };
@@ -286,6 +288,7 @@ export function Editor({
                           <span className="item-text">
                             <span className="item-name">{it.name}</span>
                             <span className="item-amount">{amountText(it.qty, it.unit, it.piece)}</span>
+                            {it.note && <span className="item-note">{it.note}</span>}
                           </span>
                         </div>
                         <MoveButtons
@@ -302,6 +305,7 @@ export function Editor({
                           <span className="item-text">
                             <span className="item-name">{it.name}</span>
                             <span className="item-amount">{amountText(it.qty, it.unit, it.piece)}</span>
+                            {it.note && <span className="item-note">{it.note}</span>}
                           </span>
                           <span className="item-edit" aria-hidden="true">
                             <Icon name="pencil" size={22} />

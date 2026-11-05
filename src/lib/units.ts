@@ -6,29 +6,31 @@ interface UnitInfo {
   /** Nombre corto para el botón de elegir unidad. */
   chip: string;
   step: number;
+  /** Paso del ajuste fino (los valores intermedios entre dos pasos normales). */
+  fine: number;
   max: number;
   start: number;
 }
 
 export const UNITS: Record<UnitId, UnitInfo> = {
-  ud: { singular: 'unidad', plural: 'unidades', chip: 'Piezas', step: 1, max: 24, start: 1 },
-  g: { singular: 'gramo', plural: 'gramos', chip: 'Gramos', step: 25, max: 2000, start: 200 },
-  kg: { singular: 'kilo', plural: 'kilos', chip: 'Kilos', step: 0.25, max: 5, start: 1 },
-  ml: { singular: 'mililitro', plural: 'mililitros', chip: 'Mililitros', step: 25, max: 2000, start: 250 },
-  l: { singular: 'litro', plural: 'litros', chip: 'Litros', step: 0.25, max: 5, start: 1 },
-  cda: { singular: 'cucharada', plural: 'cucharadas', chip: 'Cucharadas', step: 0.5, max: 12, start: 1 },
-  cdta: { singular: 'cucharadita', plural: 'cucharaditas', chip: 'Cucharaditas', step: 0.5, max: 12, start: 1 },
-  vaso: { singular: 'vaso', plural: 'vasos', chip: 'Vasos', step: 0.5, max: 8, start: 1 },
-  taza: { singular: 'taza', plural: 'tazas', chip: 'Tazas', step: 0.5, max: 8, start: 1 },
-  pizca: { singular: 'pizca', plural: 'pizcas', chip: 'Pizcas', step: 1, max: 6, start: 1 },
-  gusto: { singular: 'al gusto', plural: 'al gusto', chip: 'Al gusto', step: 0, max: 0, start: 0 },
+  ud: { singular: 'unidad', plural: 'unidades', chip: 'Piezas', step: 1, fine: 0.25, max: 24, start: 1 },
+  g: { singular: 'gramo', plural: 'gramos', chip: 'Gramos', step: 25, fine: 1, max: 2000, start: 200 },
+  kg: { singular: 'kilo', plural: 'kilos', chip: 'Kilos', step: 0.25, fine: 0.05, max: 5, start: 1 },
+  ml: { singular: 'mililitro', plural: 'mililitros', chip: 'Mililitros', step: 25, fine: 1, max: 2000, start: 250 },
+  l: { singular: 'litro', plural: 'litros', chip: 'Litros', step: 0.25, fine: 0.05, max: 5, start: 1 },
+  cda: { singular: 'cucharada', plural: 'cucharadas', chip: 'Cucharadas', step: 0.5, fine: 0.25, max: 12, start: 1 },
+  cdta: { singular: 'cucharadita', plural: 'cucharaditas', chip: 'Cucharaditas', step: 0.5, fine: 0.25, max: 12, start: 1 },
+  vaso: { singular: 'vaso', plural: 'vasos', chip: 'Vasos', step: 0.5, fine: 0.25, max: 8, start: 1 },
+  taza: { singular: 'taza', plural: 'tazas', chip: 'Tazas', step: 0.5, fine: 0.25, max: 8, start: 1 },
+  pizca: { singular: 'pizca', plural: 'pizcas', chip: 'Pizcas', step: 1, fine: 1, max: 6, start: 1 },
+  gusto: { singular: 'al gusto', plural: 'al gusto', chip: 'Al gusto', step: 0, fine: 0, max: 0, start: 0 },
 };
 
 /** Paso y máximo de la barra según la unidad y si el ingrediente se usa en poca cantidad. */
 export function rangeFor(unit: UnitId, fine?: boolean) {
   const u = UNITS[unit];
-  if (unit === 'g' && fine) return { step: 5, max: 200, start: 5 };
-  return { step: u.step, max: u.max, start: u.start };
+  if (unit === 'g' && fine) return { step: 5, fine: 1, max: 200, start: 5 };
+  return { step: u.step, fine: u.fine, max: u.max, start: u.start };
 }
 
 export function chipLabel(unit: UnitId, piece?: [string, string]) {
@@ -44,14 +46,14 @@ const FRACTIONS: [number, string][] = [
   [2 / 3, '⅔'],
 ];
 
-/** 1.5 → "1 ½", 0.25 → "¼", 250 → "250". */
+/** 1.5 → "1 ½", 0.25 → "¼", 250 → "250", 1.05 → "1,05". */
 export function fmtNumber(n: number): string {
   if (Number.isInteger(n) || n >= 20) return String(Math.round(n));
   const whole = Math.floor(n);
   const frac = n - whole;
-  const match = FRACTIONS.find(([v]) => Math.abs(v - frac) < 0.04);
+  const match = FRACTIONS.find(([v]) => Math.abs(v - frac) < 0.01);
   if (match) return whole ? `${whole} ${match[1]}` : match[1];
-  return n.toFixed(1).replace('.', ',');
+  return String(Math.round(n * 100) / 100).replace('.', ',');
 }
 
 /** Redondea una cantidad escalada a algo que se pueda medir en casa. */
@@ -64,6 +66,17 @@ export function niceAmount(n: number, unit: UnitId): number {
   if (unit === 'pizca') return Math.max(1, Math.round(n));
   if (unit === 'ud') return Math.max(0.5, Math.round(n * 2) / 2);
   return Math.max(0.25, Math.round(n * 4) / 4);
+}
+
+/**
+ * Cantidad para unas raciones distintas a las de la receta.
+ * Con las mismas raciones se respeta tal cual el valor exacto que se guardó
+ * (por ejemplo 223 g); solo se redondea cuando hay que recalcular.
+ */
+export function scaledAmount(qty: number, factor: number, unit: UnitId): number {
+  if (unit === 'gusto') return 0;
+  if (Math.abs(factor - 1) < 1e-9) return qty;
+  return niceAmount(qty * factor, unit);
 }
 
 export function unitWord(qty: number, unit: UnitId, piece?: [string, string]) {

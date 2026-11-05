@@ -1,5 +1,5 @@
 import type { Recipe } from '../types';
-import { amountText, niceAmount } from './units';
+import { amountText, scaledAmount } from './units';
 import { fmtMinutes } from '../data/courses';
 import { USER_NAME } from '../config';
 
@@ -13,8 +13,9 @@ export function recipeAsText(recipe: Recipe, servings: number) {
   if (recipe.items.length) {
     lines.push('', '*Ingredientes*');
     for (const it of recipe.items) {
-      const qty = it.unit === 'gusto' ? 0 : niceAmount(it.qty * factor, it.unit);
-      lines.push(`• ${it.name}: ${amountText(qty, it.unit, it.piece).toLowerCase()}`);
+      const qty = scaledAmount(it.qty, factor, it.unit);
+      const note = it.note?.trim();
+      lines.push(`• ${it.name}: ${amountText(qty, it.unit, it.piece).toLowerCase()}${note ? ` (${note})` : ''}`);
     }
   }
   const steps = recipe.steps.filter((s) => s.text.trim());

@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import type { Recipe } from '../types';
-import { amountText, niceAmount } from '../lib/units';
+import { amountText, scaledAmount } from '../lib/units';
 import { insideFrame, keepScreenOn, tap } from '../lib/device';
 import { recipeAsText, whatsappLink } from '../lib/share';
 import { Icon } from '../components/Icon';
@@ -9,6 +9,7 @@ import { fmtMinutes } from '../data/courses';
 import { courseName } from '../lib/courses';
 import { FoodArt } from '../components/FoodArt';
 import { fmtClock, remaining, startTimer, stopTimer, useTimers } from '../lib/timers';
+import '../components/qty.css';
 
 /** Modo cocina: lectura cómoda, casillas y cambio de raciones. */
 export function Cook({
@@ -154,7 +155,7 @@ export function Cook({
             <p className="hint">Marca cada uno cuando ya lo hayas echado.</p>
             <ul className="checklist">
               {recipe.items.map((it) => {
-                const qty = it.unit === 'gusto' ? 0 : niceAmount(it.qty * factor, it.unit);
+                const qty = scaledAmount(it.qty, factor, it.unit);
                 const on = done.has(it.key);
                 return (
                   <li key={it.key}>
@@ -172,6 +173,7 @@ export function Cook({
                       <span className="check-text">
                         <span className="check-amount">{amountText(qty, it.unit, it.piece)}</span>
                         <span className="check-name">{it.name}</span>
+                        {it.note && <span className="check-note">{it.note}</span>}
                       </span>
                     </button>
                   </li>

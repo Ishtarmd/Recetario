@@ -60,6 +60,8 @@ export interface RecipeItem {
   units: UnitId[];
   piece?: [string, string];
   fine?: boolean;
+  /** Texto libre junto a la cantidad: «bien colmada», «un poco más si hace falta»... */
+  note?: string;
 }
 
 export interface Step {

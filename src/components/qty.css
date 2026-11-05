@@ -1,0 +1,38 @@
+/* Ajuste fino de cantidades y nota por ingrediente */
+
+.fine {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.8rem 0.9rem 0.6rem;
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+.fine .field-label {
+  margin-bottom: 0;
+}
+
+.fine .slider-ends {
+  margin-top: -0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.qty-note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.qty-note .field-label {
+  margin-bottom: 0;
+}
+
+.item-note,
+.check-note {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
